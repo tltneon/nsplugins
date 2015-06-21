@@ -1,2 +1,2 @@
-# nutscript_plugins
-Plugins for NutScript 1.0. (old)
+# NutScript Plugins
+<p>Plugins for NutScript 1.0 (old NS).</p>
