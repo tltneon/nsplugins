@@ -10,7 +10,8 @@ nut.command.add("setnick", {
 				local oldName = client:Name()
 				local newName
 				if not string.find(client:Name(), "'") then
-					newName = string.gsub(oldName, " ", " '"..newNick.."' ")
+					--newName = string.gsub(oldName, " ", " '"..newNick.."' ")
+					newName = oldName .. " '"..newNick.."' "
 				else
 					newName = string.gsub(oldName, "'.*'", "'"..newNick.."'")
 				end
