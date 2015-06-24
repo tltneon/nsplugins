@@ -15,7 +15,8 @@ nut.command.add("setnick", {
 				else
 					newName = string.gsub(oldName, "'.*'", "'"..newNick.."'")
 				end
-				client:getChar():setVar("charname", newName)
+				--client:getChar():setVar("charname", newName)
+				nut.command.run(client, "charsetname", {client:Name(), newName})
 				client:notify("Your darker and edgier name is "..newName..".")
 			else
 				client:notify("You must specify a nickname.")
@@ -29,7 +30,8 @@ nut.command.add("removenick", {
 	onRun = function(client, arguments)
 		if SERVER and IsValid(client) then
 			local newName = string.gsub(client:Name(), "'.*' ", "")
-			client:getChar():setVar("charname", newName)
+			--client:getChar():setVar("charname", newName)
+			nut.command.run(client, "charsetname", {client:Name(), newName})
 			client:notify("Your lighter and tamer name is "..newName..".")
 		end
 	end
