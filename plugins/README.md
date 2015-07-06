@@ -10,4 +10,5 @@
 * quests - For someone who want to make server automatic game.
 * talknpc - Adding talking NPCs.
 * diffchat - Different chat sizes also different colors.
+* showbars - Shows you bars while content menu is active.
 * worlditemspawner - World Item Spawner.
