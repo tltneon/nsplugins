@@ -150,12 +150,11 @@ if (CLIENT) then
 else
 	function ENT:Use(activator)
 		local factionData = self:getNetVar("factiondata", {})
-		if (!factionData[activator:Team()] and !activator:IsAdmin()) then
-			activator:ChatPrint( self:getNetVar( "name", "John Doe" )..": Тест" )
+		if !factionData[nut.faction.indices[activator:Team()].uniqueID] and !activator:IsSuperAdmin() then
+			activator:ChatPrint( self:getNetVar( "name", "John Doe" )..": I don't want talk with you." )
 			return
 		end
 		netstream.Start(activator, "nut_Dialogue", self)
-		if activator:IsAdmin() then netstream.Start(activator, "nut_DialogueEditor", self) end
 	end
 
 	netstream.Hook("nut_DialogueData", function( client, data )
