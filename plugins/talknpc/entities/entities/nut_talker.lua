@@ -108,16 +108,6 @@ if (CLIENT) then
 			self.bubble:Remove()
 		end
 	end
-
-	netstream.Hook("nut_DialogueEditor", function(data)
-		if (IsValid(nut.gui.edialogue)) then
-			nut.gui.dialogue:Remove()
-			return
-		end
-		nut.gui.edialogue = vgui.Create("Nut_DialogueEditor")
-		--nut.gui.edialogue:Center()
-		nut.gui.edialogue:SetEntity(data)
-	end)
 	
 	netstream.Hook("nut_Dialogue", function(data)
 		if (IsValid(nut.gui.dialogue)) then
@@ -127,6 +117,15 @@ if (CLIENT) then
 		nut.gui.dialogue = vgui.Create("Nut_Dialogue")
 		nut.gui.dialogue:Center()
 		nut.gui.dialogue:SetEntity(data)
+if LocalPlayer():IsAdmin() then
+		if (IsValid(nut.gui.edialogue)) then
+			nut.gui.dialogue:Remove()
+			return
+		end
+		nut.gui.edialogue = vgui.Create("Nut_DialogueEditor")
+		--nut.gui.edialogue:Center()
+		nut.gui.edialogue:SetEntity(data)
+end
 	end)
 	local TEXT_OFFSET = Vector(0, 0, 20)
 	local toScreen = FindMetaTable("Vector").ToScreen
