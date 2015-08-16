@@ -1,5 +1,5 @@
 PLUGIN.name = "Productive Machines"
-PLUGIN.author = "Black Tea"
+PLUGIN.author = "Black Tea (NS 1.0), Neon (NS 1.1)"
 PLUGIN.desc = "If your server does not have proper economy? install this!"
 PLUGIN.generateJunks = true
 
