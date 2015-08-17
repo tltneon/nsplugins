@@ -1,0 +1,8 @@
+nut.lang.Add("vehicle_spawned", "You spawned vehicle.")
+nut.lang.Add("vehicle_cantfind", "You have to be near your vehicle to store your vehicle in your garage.")
+nut.lang.Add("vehicle_alreadyspawned", "You have already spawned the vehicle.")
+nut.lang.Add("vehicle_stored", "Your vehicle has been stored in your garage.")
+nut.lang.Add("vehicle_register_auto", "Your vehicle is not registered. I'll give you random number.")
+nut.lang.Add("vehicle_failed", "Error Occured.")
+nut.lang.Add("vehicle_cantsell_out", "You can't sell the car that spawned on the world.")
+nut.lang.Add("vehicle_sold", "You have sold the vehicle for %s.")

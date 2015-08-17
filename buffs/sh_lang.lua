@@ -1,0 +1,5 @@
+nut.lang.Add("stat_medical", "Medical")
+nut.lang.Add("stat_medical_desc", "How good your medical skill is.")
+nut.lang.Add("buff_legs_injured", "Your leg has been injured.")
+nut.lang.Add("buff_legs_restored", "Your leg has been restored.")
+--nut.lang.Get("desc_status")
