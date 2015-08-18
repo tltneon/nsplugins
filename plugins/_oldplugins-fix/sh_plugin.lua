@@ -1,4 +1,4 @@
-PLUGIN.name = "FIX for NutScript 1.1"
+PLUGIN.name = "FIX for NutScript 1.1 | ver.2"
 PLUGIN.desc = "Allow to use simple plugins from NS 1.0" --Смягчает переход от NS 1.0 к NS 1.1
 PLUGIN.author = "Neon"
 
@@ -7,6 +7,10 @@ PLUGIN.author = "Neon"
 nut.config.menuWidth = 0.5
 nut.config.menuHeight = 0.5
 nut.config.mainColor = Color(255, 255, 255, 255)
+
+function nut.util.Include(fileName, state)
+	nut.util.include(fileName, state)
+end
 
 function nut.util.Notify(message, recipient)
 	nut.util.notify(message, recipient)
@@ -18,14 +22,6 @@ end
 
 function nut.command.Register(data, cmd)
 	nut.command.add(cmd, data)
-end
-
-function nut.bar.Add(identifier, data)
-	nut.bar.add(data.getValue, data.color, priority or 1, identifier)
-end
-
-function nut.util.Include(file)
-	nut.util.include(file)
 end
 
 function nut.flag.Create(flag, data)
@@ -43,6 +39,12 @@ end
 local playerMeta = FindMetaTable("Player")
 function playerMeta:HasFlag(flag)
 	self:getChar():hasFlags(flag)
+end
+function playerMeta:GetNutVar(var, def)
+	self:getNutData(var, def)
+end
+function playerMeta:SetNutVar(var, def)
+	self:setNutData(var, def)
 end
 if CLIENT then
 	surface.CreateFont("nut_NotiFont", {
@@ -124,5 +126,12 @@ if CLIENT then
 		--tabs[name] = callback(panel)
 			--addTab(name, callback, uniqueID)
 		--end
+	end
+	function nut.bar.Add(identifier, data)
+		--print(data,data.getValue, data.color,data["getValue"], data["color"])
+		nut.bar.add(data.getValue, data.color, priority or 1, identifier)
+	end
+	function nut.util.DrawText(x, y, str, color, font)
+		nut.util.drawText(str, x, y, color, 1, 1, font, 255)
 	end
 end
