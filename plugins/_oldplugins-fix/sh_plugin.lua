@@ -4,9 +4,24 @@ PLUGIN.author = "Neon"
 
 // Github NS Plugins: https://github.com/tltneon/nsplugins
 
-nut.config.menuWidth = 0.5
-nut.config.menuHeight = 0.5
-nut.config.mainColor = Color(255, 255, 255, 255)
+nut.util.include("sh_vars.lua")
+BASE = ITEM or nut.item.base
+phrases = {}
+/*database = {}
+
+function PLUGIN:LoadData()
+	database = self:getData() or {}
+end
+function PLUGIN:SaveData()
+	self:setData(database)
+end
+
+function nut.util.ReadTable(name, _)
+	return database[name] or {}
+end
+function nut.util.WriteTable(name, tbl, _, _)
+	database[name] = tbl
+end*/
 
 function nut.util.Include(fileName, state)
 	nut.util.include(fileName, state)
@@ -32,19 +47,65 @@ function nut.command.FindPlayer(client, name)
 	nut.command.findPlayer(client, name)
 end
 
-function nut.lang.Get(text)
-	L(text)
+function nut.lang.Add(key, value, language)
+	phrases[key] = value
+end
+function nut.lang.Get(key, ...)
+	if (phrases[key]) then
+		return string.format(phrases[key], ...)
+	else
+		return "<missing "..key..">"
+	end
+end
+
+function nut.attribs.SetUp(_,_,_)
+end
+
+function nut.plugin.Get(plugin)
+	return nut.plugin[plugin]
+end
+
+function nut.currency.GetName(value)
+	return nut.currency.get(value)
+end
+
+local entityMeta = FindMetaTable("Entity")
+function entityMeta:GetNetVar(key, default)
+	self:getNetVar(key, default)
+end
+function entityMeta:SetNetVar(key, default)
+	self:setNetVar(key, default)
 end
 
 local playerMeta = FindMetaTable("Player")
+--playerMeta.character = playerMeta:getChar()
+
 function playerMeta:HasFlag(flag)
 	self:getChar():hasFlags(flag)
 end
 function playerMeta:GetNutVar(var, def)
 	self:getNutData(var, def)
 end
-function playerMeta:SetNutVar(var, def)
-	self:setNutData(var, def)
+function playerMeta:SetNutVar(var, value)
+	self:setNutData(var, value)
+end
+function playerMeta:UpdateInv(uniqueID, quantity, data)
+	if quantity > 0 then
+		self:getChar():add(uniqueID, quantity, data)
+	else
+		self:getChar():remove(uniqueID)
+	end
+end
+function playerMeta:GetInventory()
+	return playerMeta:getChar():getInv()
+end
+function playerMeta:Kick()
+	self:kick()
+end
+
+local ITEM = nut.meta.item or {}
+function ITEM:Hook(name, func)
+	self:hook(name, func)
 end
 if CLIENT then
 	surface.CreateFont("nut_NotiFont", {
@@ -52,6 +113,12 @@ if CLIENT then
 		size = 16,
 		weight = 500,
 		antialias = true
+	})
+	surface.CreateFont("nut_TokensFont", {
+		font = "ChatFont",
+		size = 32,
+		weight = 1600,
+		italic = false
 	})
 
 	local PANEL = {}
@@ -121,17 +188,68 @@ if CLIENT then
 		end
 	end
 	vgui.Register("nut_NoticePanel", PANEL, "DPanel")
-	
-	function addButton(uniqueID, name, callback) --## innactive function. just for removing errors
-		--tabs[name] = callback(panel)
-			--addTab(name, callback, uniqueID)
-		--end
-	end
+
 	function nut.bar.Add(identifier, data)
 		--print(data,data.getValue, data.color,data["getValue"], data["color"])
 		nut.bar.add(data.getValue, data.color, priority or 1, identifier)
 	end
 	function nut.util.DrawText(x, y, str, color, font)
 		nut.util.drawText(str, x, y, color, 1, 1, font, 255)
+	end
+else
+	--function nut.schema.Call(name, gm, ...)
+	--	hook.Call(name, gm, ...)
+	--end
+	function nut.db.Query(query, callback, filter)
+		nut.db.query(query, callback, filter)
+	end
+	function nut.db.Escape(str)
+		nut.db.escape(str)
+	end
+	function nut.char.Save(chr)
+	end
+	function PLUGIN:PlayerLoadedChar(client)
+		client.character = client:getChar()
+	end
+	function nut.item.Get(item)
+		return nut.item.list[item]
+	end
+	
+	function playerMeta:HasInvSpace(item)
+		local w, h = nut.item.list[item].width, nut.item.list[item].height
+		if self:getChar():getInv():findEmptySlot(w, h, false) then return true end
+		return false
+	end
+	function playerMeta:CanAfford(price)
+		return self:getChar():hasMoney(price)
+	end
+	function playerMeta:TakeMoney(amount)
+		return self:getChar():giveMoney(-amount)
+	end
+	function playerMeta:RealName(player)
+		return self:steamName()
+	end
+
+	local charMeta = nut.meta.character
+	function charMeta:UpdateAttrib(key, value)
+		self:updateAttrib(key, value)
+	end
+	function charMeta:GetAttrib(key, value)
+		self:getAttrib(key, value)
+	end
+	function charMeta:GetData(key, value)
+		self:getData(key, value)
+	end
+	function charMeta:SetData(key, value)
+		self:setData(key, value)
+	end
+	function charMeta:GetVar(var)
+		if var == "charname" then return self:Name() end
+		if var == "faction" then return self:getFaction() end
+		if var == "id" then return self:getChar():getID() end
+		return self:getVar(var)
+	end
+	function charMeta:SetVar(var, value)
+		self:setVar(var, value)
 	end
 end

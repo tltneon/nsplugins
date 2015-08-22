@@ -3,28 +3,34 @@ PLUGIN.author = "_FR_Starfox64 (NS 1.0), Neon (NS 1.1)"
 PLUGIN.desc = "The NSA is watching!"
 PLUGIN.cctvDistance = 300
 
-nut.util.include("sv_plugin.lua")
+if !nut.plugin.list["_oldplugins-fix"] then
+	print("[CCTV Plugin] _oldplugins-fix Plugin is not found!")
+	print("Download from GitHub: https://github.com/tltneon/nsplugins\n")
+	return
+end
+
+nut.util.Include("sv_plugin.lua")
 
 local PLUGIN = PLUGIN
 
-nut.command.add("cctv", {
+nut.command.Register({
 	onRun = function(ply, arguments)
 		PLUGIN:StartCCTV( ply )
 	end
-})
+}, "cctv")
 
-nut.command.add("cctvcreate", {
+nut.command.Register({
 	adminOnly = true,
-	syntax = "<camName>",
+	syntax = "<string camName>",
 	onRun = function(ply, arguments)
-		if not arguments[1] then return end
+		if not arguments[1] then return ply:notifyLocalized("missing_arg", 1) end
 		local ent = ents.Create("nut_cctv_camera")
 		ent:SetPos(ply:GetPos())
 		ent:SetNWString("name", arguments[1])
 		ent:Spawn()
 		ent:Activate()
 	end
-})
+}, "cctvcreate")
 
 if (CLIENT) then
 	netstream.Hook("cctvStart", function()

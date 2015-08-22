@@ -7,11 +7,13 @@ function PLUGIN:StartCCTV( ply )
 			return
 		end
 	end
-	ply:notify("You must be within "..self.cctvDistance.." units of a CCTV Prompt!")
+	nut.util.Notify("You must be within "..self.cctvDistance.." units of a CCTV Prompt!", ply)
 end
 
 function PLUGIN:LoadData()
 	local data = self:getData() or {}
+	data.cameras = data.cameras or {}
+	data.cctv = data.cctv or {}
 	for k, v in pairs(data.cameras) do
 		local position = v.pos
 		local angles = v.angles
@@ -44,6 +46,8 @@ end
 
 function PLUGIN:SaveData()
 	local data = {}
+	data.cameras = {}
+	data.cctv = {}
 	for k, v in pairs(ents.FindByClass("nut_cctv_camera")) do
 		if v:GetNWString("name", "Unknown") != "Unknown" then
 			data.cameras[#data + 1] = {
@@ -72,7 +76,7 @@ netstream.Hook("cctvUpdate", function( ply, camera )
 	end
 
 	if not cameraFound then
-		ply:notify("ERROR: Failure to find camera ( "..camera.." )!")
+		nut.util.Notify("ERROR: Failure to find camera ( "..camera.." )!", ply)
 		return
 	end
 
