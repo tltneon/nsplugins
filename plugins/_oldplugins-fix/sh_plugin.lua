@@ -44,7 +44,7 @@ function nut.flag.Create(flag, data)
 end
 
 function nut.command.FindPlayer(client, name)
-	nut.command.findPlayer(client, name)
+	return nut.command.findPlayer(client, name)
 end
 
 function nut.lang.Add(key, value, language)
@@ -71,7 +71,7 @@ end
 
 local entityMeta = FindMetaTable("Entity")
 function entityMeta:GetNetVar(key, default)
-	self:getNetVar(key, default)
+	return self:getNetVar(key, default)
 end
 function entityMeta:SetNetVar(key, default)
 	self:setNetVar(key, default)
@@ -80,20 +80,26 @@ end
 local playerMeta = FindMetaTable("Player")
 --playerMeta.character = playerMeta:getChar()
 
+function playerMeta:HasMoney(money)
+	return self:getChar():hasMoney(money)
+end
 function playerMeta:HasFlag(flag)
-	self:getChar():hasFlags(flag)
+	return self:getChar():hasFlags(flag)
 end
 function playerMeta:GetNutVar(var, def)
-	self:getNutData(var, def)
+	--self:getNutData(var, def)
+	return self:getNetVar(var, def)
 end
 function playerMeta:SetNutVar(var, value)
-	self:setNutData(var, value)
+	--self:setNutData(var, value)
+	self:setNetVar(var, value)
 end
-function playerMeta:UpdateInv(uniqueID, quantity, data)
-	if quantity > 0 then
-		self:getChar():add(uniqueID, quantity, data)
+function playerMeta:UpdateInv(uniqueID, quantity, data, _)
+	if quantity >= 0 then
+		quantity = quantity or 1
+		self:getChar():getInv():add(uniqueID, quantity, data)
 	else
-		self:getChar():remove(uniqueID)
+		self:getChar():getInv():remove(uniqueID)
 	end
 end
 function playerMeta:GetInventory()
@@ -103,11 +109,23 @@ function playerMeta:Kick()
 	self:kick()
 end
 
+local charMeta = nut.meta.character
+function charMeta:GetVar(var)
+	if var == "charname" then return self:Name() end
+	if var == "faction" then return self:getFaction() end
+	if var == "id" then return self:getChar():getID() end
+	return self:getVar(var)
+end
+function charMeta:SetVar(var, value)
+	self:setVar(var, value)
+end
+	
 local ITEM = nut.meta.item or {}
 function ITEM:Hook(name, func)
 	self:hook(name, func)
 end
 if CLIENT then
+	--Fonts
 	surface.CreateFont("nut_NotiFont", {
 		font = "Myriad Pro",
 		size = 16,
@@ -120,7 +138,48 @@ if CLIENT then
 		weight = 1600,
 		italic = false
 	})
+	
+	--Hooks
+	netstream.Hook("nut_FadeIn", function(data)
+		local color = data[1]
+		local r, g, b, a = color.r, color.g, color.b, color.a or 255
+		local time = data[2]
+		local start = CurTime()
+		local finish = start + time
 
+		nut.fadeColor = color
+
+		hook.Add("HUDPaint", "nut_FadeIn", function()
+			local fraction = math.TimeFraction(start, finish, CurTime())
+
+			surface.SetDrawColor(r, g, b, fraction * a)
+			surface.DrawRect(0, 0, ScrW(), ScrH())
+		end)
+	end)
+
+	netstream.Hook("nut_FadeOut", function(data)
+		local color = data[2] or nut.fadeColor
+
+		if (color) then
+			local r, g, b, a = color.r, color.g, color.b, color.a or 255
+			local time = data[1]
+			local start = CurTime()
+			local finish = start + time
+
+			hook.Add("HUDPaint", "nut_FadeIn", function()
+				local fraction = 1 - math.TimeFraction(start, finish, CurTime())
+
+				if (fraction < 0) then
+					return hook.Remove("HUDPaint", "nut_FadeIn")
+				end
+
+				surface.SetDrawColor(r, g, b, fraction * a)
+				surface.DrawRect(0, 0, ScrW(), ScrH())		
+			end)
+		end
+	end)
+	
+	--Panels
 	local PANEL = {}
 	PANEL.pnlTypes = {
 		[1] = { -- NOT ALLOWED
@@ -188,7 +247,8 @@ if CLIENT then
 		end
 	end
 	vgui.Register("nut_NoticePanel", PANEL, "DPanel")
-
+	
+	--Functions
 	function nut.bar.Add(identifier, data)
 		--print(data,data.getValue, data.color,data["getValue"], data["color"])
 		nut.bar.add(data.getValue, data.color, priority or 1, identifier)
@@ -203,8 +263,11 @@ else
 	function nut.db.Query(query, callback, filter)
 		nut.db.query(query, callback, filter)
 	end
+	function nut.currency.Spawn(amount, pos, angle)
+		nut.currency.Spawn(pos, amount, angle)
+	end
 	function nut.db.Escape(str)
-		nut.db.escape(str)
+		return nut.db.escape(str)
 	end
 	function nut.char.Save(chr)
 	end
@@ -224,32 +287,34 @@ else
 		return self:getChar():hasMoney(price)
 	end
 	function playerMeta:TakeMoney(amount)
-		return self:getChar():giveMoney(-amount)
+		self:getChar():giveMoney(-amount)
 	end
 	function playerMeta:RealName(player)
 		return self:steamName()
 	end
+	function playerMeta:HasItem(item)
+		return self:getChar():getInv():hasItem(item)
+	end
+	function playerMeta:ScreenFadeIn(time, color)
+		time = time or 5
+		color = color or Color(25, 25, 25)
+		netstream.Start(self, "nut_FadeIn", {color, time})
+	end
 
-	local charMeta = nut.meta.character
+	function playerMeta:ScreenFadeOut(time, color)
+		netstream.Start(self, "nut_FadeOut", {time or 5, color})
+	end
+
 	function charMeta:UpdateAttrib(key, value)
 		self:updateAttrib(key, value)
 	end
 	function charMeta:GetAttrib(key, value)
-		self:getAttrib(key, value)
+		return self:getAttrib(key, value)
 	end
 	function charMeta:GetData(key, value)
-		self:getData(key, value)
+		return self:getData(key, value)
 	end
 	function charMeta:SetData(key, value)
 		self:setData(key, value)
-	end
-	function charMeta:GetVar(var)
-		if var == "charname" then return self:Name() end
-		if var == "faction" then return self:getFaction() end
-		if var == "id" then return self:getChar():getID() end
-		return self:getVar(var)
-	end
-	function charMeta:SetVar(var, value)
-		self:setVar(var, value)
 	end
 end
