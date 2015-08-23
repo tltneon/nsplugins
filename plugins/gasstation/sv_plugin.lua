@@ -20,14 +20,14 @@ function PLUGIN:UseGasPump( ply, entity )
 				found.fuel = found.fuel or 0
 				local fuel = math.floor(found.fuel)
 				if fuel >= 100 then
-					ply:notify("Fueltank already full.")
+					nut.util.Notify("Fueltank already full.", ply)
 					return false
 				elseif timer.Exists("GAS_PUMP_"..found:EntIndex()) then
-					ply:notify("This vehicle is already being refueled.")
+					nut.util.Notify("This vehicle is already being refueled.", ply)
 					return false
 				end
 				found.gasPos = found:GetPos()
-				ply:notify("Vehicle refueling in progress, please do not move your vehicle.")
+				nut.util.Notify("Vehicle refueling in progress, please do not move your vehicle.", ply)
 				local gasSound = CreateSound(  entity, "ambient/machines/pump_loop_1.wav")
 				gasSound:Play()
 				gasSound:ChangeVolume(0.5, 0)
@@ -35,28 +35,28 @@ function PLUGIN:UseGasPump( ply, entity )
 				timer.Create("GAS_PUMP_"..found:EntIndex(), 0.5, 100, function()
 					if not IsValid(found) then return end
 					if found:GetPos():Distance(found.gasPos) > 30 then
-						ply:notify("You moved your vehicle, refueling stopped.")
+						nut.util.Notify("You moved your vehicle, refueling stopped.", ply)
 						gasSound:Stop()
 						timer.Destroy("GAS_PUMP_"..found:EntIndex())
 						return
 					elseif not ply:HasMoney(self.price) then
-						ply:notify("You do not have anymore money to spend.")
+						nut.util.Notify("You do not have anymore money to spend.", ply)
 						gasSound:Stop()
 						timer.Destroy("GAS_PUMP_"..found:EntIndex())
 						return
 					else
-						ply:takeMoney(self.price)
+						ply:TakeMoney(self.price)
 						found.fuel = math.Clamp(found.fuel + 1, 0, 100)
 						ticks = ticks + 1
 						if found.fuel >= 100 then
-							ply:notify("Your vehicle has been refueled for "..self.price * ticks.."€.")
+							nut.util.Notify("Your vehicle has been refueled for "..self.price * ticks.."€.", ply)
 							gasSound:Stop()
 							timer.Destroy("GAS_PUMP_"..found:EntIndex())
 						end
 					end
 				end)
 			else
-				ply:notify("No vehicle in range.")
+				nut.util.Notify("No vehicle in range.", ply)
 			end
 		end
 	end
