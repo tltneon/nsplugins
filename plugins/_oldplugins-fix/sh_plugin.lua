@@ -60,9 +60,19 @@ end
 
 function nut.attribs.SetUp(_,_,_)
 end
+function nut.anim.SetModelClass(class, model)
+	nut.anim.setModelClass(model, class)
+end
+function nut.anim.GetClass(model)
+	if !model then model = "citizen_male" end
+	return nut.anim.getModelClass(model)
+end
 
 function nut.plugin.Get(plugin)
 	return nut.plugin[plugin]
+end
+function nut.item.Get(item)
+	return nut.item.list[item]
 end
 
 function nut.currency.GetName(value)
@@ -108,10 +118,13 @@ end
 function playerMeta:Kick()
 	self:kick()
 end
+function playerMeta:WepRaised()
+	return self:isWepRaised()
+end
 
 local charMeta = nut.meta.character
 function charMeta:GetVar(var)
-	if var == "charname" then return self:Name() end
+	if var == "charname" then return self:getName() end
 	if var == "faction" then return self:getFaction() end
 	if var == "id" then return self:getChar():getID() end
 	return self:getVar(var)
@@ -274,12 +287,9 @@ else
 	function PLUGIN:PlayerLoadedChar(client)
 		client.character = client:getChar()
 	end
-	function nut.item.Get(item)
-		return nut.item.list[item]
-	end
 	
-	function playerMeta:HasInvSpace(item)
-		local w, h = nut.item.list[item].width, nut.item.list[item].height
+	function playerMeta:HasInvSpace(item, test, _, _)
+		local w, h = nut.item.list[item.uniqueID].width, nut.item.list[item.uniqueID].height
 		if self:getChar():getInv():findEmptySlot(w, h, false) then return true end
 		return false
 	end
