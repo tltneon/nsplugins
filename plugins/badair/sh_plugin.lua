@@ -2,10 +2,16 @@ local PLUGIN = PLUGIN
 local playerMeta = FindMetaTable("Player")
 
 PLUGIN.name = "Bad Air"
-PLUGIN.author = "Black Tea"
+PLUGIN.author = "Black Tea (NS 1.0), Neon (NS 1.1)"
 PLUGIN.desc = "Bad Air just like Metro. DrunkyBlur by Spy."
 PLUGIN.deadZones = PLUGIN.deadZones or {}
 PLUGIN.gasList = {} -- No Leave/Join/CharChange shit.
+
+if !nut.plugin.list["_oldplugins-fix"] then
+	print("[Bad Air Plugin] _oldplugins-fix Plugin is not found!")
+	print("Download from GitHub: https://github.com/tltneon/nsplugins\n")
+	return
+end
 
 PLUGIN.gasDamage = 15
 PLUGIN.maxGas = 100
@@ -17,16 +23,11 @@ PLUGIN.damageTime = 3
 
 if (SERVER) then
 	function PLUGIN:LoadData()
-		self.deadZones = self:setData() or {}
-		PrintTable(self.deadZones)
+		self.deadZones = self:getData() or {}
 	end
 
 	function PLUGIN:SaveData()
 		self:setData(self.deadZones)
-	end
-	
-	function PLUGIN:OnCharCreated(client, character)
-		self.gasList[client:SteamID()][character:getID()] = 0
 	end
 
 	function PLUGIN:CanThroughBadAir(client)
@@ -34,18 +35,18 @@ if (SERVER) then
 	end
 
 	function PLUGIN:GetGasAmount(client, amount)
-		--if client:HasPartModel( "part_mask") then
-			--for k, v in pairs(client:GetItemsByClass("part_mask")) do
-				--if v:getData("equip") then
-				print(client)
-				local mask = client:getChar():getInv():hasItem("part_mask")
-					if mask and mask > 0 then
-						mask.Filter = math.Clamp(mask.Filter - 1, 0, math.huge)
+		local char = client:getChar()
+
+		if (char:getInv()) then
+			for k, v in pairs(char:getInv():getItems()) do
+				if (v.uniqueID == "mask" and v:getData("equip")) then
+					if v:getData("filter") and v:getData("filter") > 0 then
+						v:setData("filter", math.Clamp(v:getData("filter") - 1, 0, math.huge))
 						return 0
 					end
-				--end
-			--end
-		--end
+				end
+			end
+		end
 		return amount
 	end
 	
@@ -74,15 +75,15 @@ if (SERVER) then
 		end
 	end
 
-	function PLUGIN:DoPlayerDeath( client, attacker, dmg )
+	function PLUGIN:DoPlayerDeath( client )
 		self.gasList[client:SteamID()][client:getChar():getID()] = 0
 		netstream.Start(client, "nut_SyncBadAir", self.gasList[client:SteamID()][client:getChar():getID()])
 	end
 
-	function PLUGIN:PlayerLoadedChar(client, character, lastChar)
+	function PLUGIN:PlayerLoadedChar(client)
 		self.gasList[client:SteamID()] = self.gasList[client:SteamID()] or {}
-		self.gasList[client:SteamID()][character:getID()] = self.gasList[client:SteamID()][character:getID()] or 0
-		netstream.Start(client, "nut_SyncBadAir", self.gasList[client:SteamID()][character:getID()])
+		self.gasList[client:SteamID()][client:getChar():getID()] = self.gasList[client:SteamID()][client:getChar():getID()] or 0
+		netstream.Start(client, "nut_SyncBadAir", self.gasList[client:SteamID()][client:getChar():getID()])
 	end
 
 	local thinktime = RealTime()
@@ -109,7 +110,8 @@ if (SERVER) then
 
 					if (pos:WithinAABox(vec[1], vec[2])) then
 						local gasamount = self.gasAmount
-						gasamount = hook.Call("GetGasAmount", client, gasamount)
+						gasamount = self:GetGasAmount(client, gasamount)
+						--gasamount = hook.Call("GetGasAmount", client, gasamount)
 
 						self.gasList[client:SteamID()] = self.gasList[client:SteamID()] or {}
 						self.gasList[client:SteamID()][client:getChar():getID()] = self.gasList[client:SteamID()][client:getChar():getID()] or 0
@@ -118,9 +120,11 @@ if (SERVER) then
 
 						if (gasamount > 0) then
 							if (self.maxGas <= self.gasList[client:SteamID()][client:getChar():getID()]) then -- replace 0 to player gas amount
-								hook.Call("OnBreathBadAir", client, true)
+								self:OnBreathBadAir(client, true)
+								--hook.Call("OnBreathBadAir", client, true)
 							else
-								hook.Call("OnBreathBadAir", client, false)
+								self:OnBreathBadAir(client, false)
+								--hook.Call("OnBreathBadAir", client, false)
 							end
 
 							break
@@ -130,7 +134,8 @@ if (SERVER) then
 
 				if (!damaged) then
 					local restoreamount = self.restoreAmount
-					restoreamount = hook.Call("GetRestoreAmount", client, restoreamount)
+					restoreamount = self:GetRestoreAmount(client, restoreamount)
+					--restoreamount = hook.Call("GetRestoreAmount", client, restoreamount)
 
 					self.gasList[client:SteamID()] = self.gasList[client:SteamID()] or {}
 					self.gasList[client:SteamID()][client:getChar():getID()] = self.gasList[client:SteamID()][client:getChar():getID()] or 0
@@ -174,27 +179,24 @@ local function vecabs( v1, v2 )
 	return fv1, fv2
 end
 
-nut.command.add("badairadd", {
+nut.command.Register({
 	adminOnly = true,
 	onRun = function(client, arguments)
 		if (!client:getNetVar("badairMin")) then
 			client:setNetVar("badairMin", client:GetPos())
-
-			client:notify( "Run the command again at a different position to set a maximum point." )
+			nut.util.Notify( "Run the command again at a different position to set a maximum point.", client )
 		else
 			local vector1, vector2 = vecabs( client:getNetVar("badairMin"),  client:GetPos() )
-			PrintTable(PLUGIN.deadZones)
-			print(vector1, vector2)
 			table.insert(PLUGIN.deadZones, {vector1, vector2})
 			PLUGIN:SaveData()
 			client:setNetVar("badairMin", nil)
 
-			client:notify("Added new bad-air area.")
+			nut.util.Notify("Added new bad-air area.", client)
 		end
 	end
-} )
+}, "badairadd")
 
-nut.command.add("badairremove", {
+nut.command.Register({
 	adminOnly = true,
 	onRun = function(client, arguments)
 		local pos = client:GetPos() + client:OBBCenter()
@@ -203,14 +205,13 @@ nut.command.add("badairremove", {
 			if (pos:WithinAABox(vec[1], vec[2])) then
 				table.remove(PLUGIN.deadZones, k)
 				PLUGIN:SaveData()
-
-				client:notify("You've removed bad-air area.")
+				nut.util.Notify("You've removed bad-air area.", client)
 				return
 			end
 		end
 
 		print('Debug-Dead Zones')
 		PrintTable(PLUGIN.deadZones)
-		client:notify("To remove bad-air area, You have to be in bad-air area")
+		nut.util.Notify("To remove bad-air area, You have to be in bad-air area.", client)
 	end
-})
+}, "badairremove")

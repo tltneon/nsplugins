@@ -8,11 +8,13 @@ ITEM.partdata = { -- You can use PAC3 to setup the part.
 	size = 1,
 }
 ITEM.model = Model("models/props_junk/cardboard_box004a.mdl")
-ITEM.weight = 1
+ITEM.width = 1
+ITEM.height = 1
 ITEM.desc = "A Mask that protects you from the bad air area."
 
-ITEM:hook("Equip", function(itemTable, client, data, entity, index)
+ITEM:hook("equip", function(item)
 	if (SERVER) then
+		local client = item.player
 		client:ConCommand("say /me grabs mask from the inventory and puts mask on the face.")
 		client:EmitSound("items/ammopickup.wav")
 	end
@@ -27,12 +29,12 @@ ITEM.functions._CheckFilter = { -- don't ask why I put _ before 'filter'.
 	icon = "icon16/weather_sun.png",
 	onRun = function(item)
 		if (SERVER) then
-			local filter = item.Filter or 0--data.Filter or 0 -- mod this to change filter time.
+			local filter = item:getData("filter") or 0 -- mod this to change filter time.
 
 			if filter == 0 then
-				item.player:notify("The filter is expired.")
+				nut.util.Notify("The filter is expired.", client)
 			else
-				item.player:notify("The filter's health is " .. filter .. "." )
+				nut.util.Notify("The filter's health is " .. filter .. "." , client)
 			end
 			return false
 		end
@@ -46,24 +48,22 @@ ITEM.functions._Filter = { -- don't ask why I put _ before 'filter'.
 	icon = "icon16/weather_sun.png",
 	onRun = function(item)
 		if (SERVER) then
-			if item.player:getChar():getInv():hasItem("air_filter") then
-				item.Filter = 300
+			local client = item.player
+			if client:HasItem("filter") then
+				local id = client:HasItem("filter"):getID()
 				--local newData = table.Copy(data)
-
 				-- Default Think time : 1 seconds
 				-- It survives 300 thinks
 				-- 300 * 1 seconds = 300 seconds.
 				--newData.Filter = 300 -- mod this to change filter time.
+				client:UpdateInv(item.uniqueID, 1, {filter = 300}, true)
+				client:UpdateInv(id, -1)
 
-				--item.player:UpdateInv(itemTable.uniqueID, 1, newData, true)
-				--item.player:getChar():getInv():remove("air_filter")--UpdateInv("air_filter", -1, {}, true)
-				item.player:getChar():getInv():hasItem("air_filter"):remove()
-
-				item.player:EmitSound("HL1/fvox/hiss.wav")
-				item.player:notify("You changed the mask's filter.")
-				--return true
+				client:EmitSound("HL1/fvox/hiss.wav")
+				nut.util.Notify("You changed the mask's filter.", client)
+				return true
 			else
-				item.player:notify("You don't have any filter to change.")
+				nut.util.Notify("You don't have any filter to change.", client)
 			end
 			return false
 		end
