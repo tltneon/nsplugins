@@ -53,10 +53,10 @@ else
 		surface.SetTextColor( 255, 255, 255 )
 		surface.SetFont( "ChatFont" )
 		local size = { x = 10, y = 10 }
-		size.x, size.y = surface.GetTextSize( L"craftingtable" )
+		size.x, size.y = surface.GetTextSize( nut.lang.Get( "craftingtable" ) )
 		surface.SetTextPos( -size.x/2, -size.y/2 )
 		size.x = size.x + 20; size.y = size.y + 15
-		surface.DrawText( L"craftingtable" )
+		surface.DrawText( nut.lang.Get( "craftingtable" ) )
 	cam.End3D2D()
 	end
 

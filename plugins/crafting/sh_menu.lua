@@ -4,26 +4,24 @@ local paper = Material("icon16/book.png")
 local size = 16
 local border = 4
 local distance = size + border
-local menuWidth, menuHeight = 0.5, 0.5
 
 local PANEL = {}
 	function PANEL:Init()
-		--self:SetPos(ScrW() * 0.375, ScrH() * 0.125)
-		self:SetSize(ScrW() * menuWidth, ScrH() * menuHeight)
-		self:Center()
+		self:SetPos(ScrW() * 0.375, ScrH() * 0.125)
+		self:SetSize(ScrW() * nut.config.menuWidth, ScrH() * nut.config.menuHeight)
 		self:MakePopup()
-		self:SetTitle(L"crafting")
+		self:SetTitle(nut.lang.Get("crafting"))
 
-		/*local noticePanel = self:Add( "nut_NoticePanel" )
+		local noticePanel = self:Add( "nut_NoticePanel" )
 		noticePanel:Dock( TOP )
 		noticePanel:DockMargin( 0, 0, 0, 5 )
 		noticePanel:SetType( 7 )
-		noticePanel:SetText( L"craft_menu_tip1" )
+		noticePanel:SetText( nut.lang.Get("craft_menu_tip1") )
 		local noticePanel = self:Add( "nut_NoticePanel" )
 		noticePanel:Dock( TOP )
 		noticePanel:DockMargin( 0, 0, 0, 5 )
 		noticePanel:SetType( 4 )
-		noticePanel:SetText( L"craft_menu_tip2" )*/
+		noticePanel:SetText( nut.lang.Get("craft_menu_tip2") )
 
 		self.list = self:Add("DScrollPanel")
 		self.list:Dock(FILL)
@@ -73,13 +71,13 @@ local PANEL = {}
 							end
 						end
 
-						local text = L("crft_text", itemTable.name, itemTable.desc)
+						local text = nut.lang.Get("crft_text", itemTable.name, itemTable.desc)
 						local cnt = 0
 						local brk = "\n"
 						for itc, qua in pairs( itemTable.items ) do
 							cnt = cnt + 1
 							if ( cnt == table.Count( itemTable.items ) ) then brk = "" end
-							local tblItem = nut.item.list[itc]
+							local tblItem = nut.item.Get( itc )
 							if tblItem then
 								text = text .. tblItem.name .. " x ".. qua .. brk
 							end
@@ -95,7 +93,7 @@ local PANEL = {}
 							net.SendToServer()
 							icon.disabled = true
 							icon:SetAlpha(70)
-							timer.Simple( 1, function()
+							timer.Simple(nut.config.buyDelay, function()
 								if (IsValid(icon)) then
 									icon.disabled = false
 									icon:SetAlpha(255)
@@ -113,13 +111,13 @@ local PANEL = {}
 					local icon = list:Add("SpawnIcon")
 					icon:SetModel( itemTable.model or "models/props_lab/box01a.mdl" )
 						
-					local text = L("crft_text", itemTable.name, itemTable.desc)
+					local text = nut.lang.Get("crft_text", itemTable.name, itemTable.desc)
 					local cnt = 0
 					local brk = "\n"
 					for itc, qua in pairs( itemTable.items ) do
 						cnt = cnt + 1
 						if ( cnt == table.Count( itemTable.items ) ) then brk = "" end
-						local tblItem = nut.item.list[itc]
+						local tblItem = nut.item.Get( itc )
 						if tblItem then
 							text = text .. tblItem.name .. " x ".. qua .. brk
 						end
@@ -148,7 +146,7 @@ local PANEL = {}
 						net.SendToServer()
 						icon.disabled = true
 						icon:SetAlpha(70)
-						timer.Simple(nut.config.buyDelay, function()
+						timer.Simple(1, function()
 							if (IsValid(icon)) then
 								icon.disabled = false
 								icon:SetAlpha(255)
@@ -173,7 +171,7 @@ vgui.Register("nut_Crafting", PANEL, "DFrame")
 
 function PLUGIN:CreateMenuButtons(menu, addButton)
 	if self.menuEnabled then
-		addButton("crafting", L("crafting"), function()
+		addButton("crafting", nut.lang.Get("crafting"), function()
 			nut.gui.crafting = vgui.Create("nut_Crafting", menu)
 			menu:SetCurrentMenu(nut.gui.crafting)
 		end)
