@@ -49,8 +49,8 @@ else
 
 		if client:getChar():GetVar("faction") == FACTION_EMT then
 			timer.Simple(0.1, function()
-				client:Give("weapon_eurp_defib")
-				client:SelectWeapon("weapon_eurp_defib")
+				client:Give("nut_defibrillator")
+				client:SelectWeapon("nut_defibrillator")
 			end)
 		end
 	end
@@ -98,5 +98,7 @@ else
 				end
 			end
 		end
+	end
+	function RevivePlayer(client)
 	end
 end
