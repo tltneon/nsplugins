@@ -2,6 +2,12 @@ PLUGIN.name = "Revive"
 PLUGIN.author = "_FR_Starfox64 (NS 1.0), Neon (NS 1.1)"
 PLUGIN.desc = "EMTs can revive dead players!"
 
+if !nut.plugin.list["_oldplugins-fix"] then
+	print("[Revive Plugin] _oldplugins-fix Plugin is not found!")
+	print("Download from GitHub: https://github.com/tltneon/nsplugins\n")
+	return
+end
+
 local PLUGIN = PLUGIN
 
 if CLIENT then
