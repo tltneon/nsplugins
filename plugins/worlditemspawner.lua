@@ -52,7 +52,7 @@ if SERVER then
 
 		for i = 1, self.itemsperspawn do
 			if #self.spawneditems >= self.maxitems then
-
+					table.remove(self.spawneditems)
 				return
 			end
 
