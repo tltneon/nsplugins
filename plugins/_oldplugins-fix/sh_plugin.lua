@@ -1,4 +1,4 @@
-PLUGIN.name = "FIX for NutScript 1.1 | ver.2"
+PLUGIN.name = "FIX for NutScript 1.1 | ver.3"
 PLUGIN.desc = "Allow to use simple plugins from NS 1.0" --Смягчает переход от NS 1.0 к NS 1.1
 PLUGIN.author = "Neon"
 
@@ -7,21 +7,27 @@ PLUGIN.author = "Neon"
 nut.util.include("sh_vars.lua")
 BASE = ITEM or nut.item.base
 phrases = {}
-/*database = {}
 
-function PLUGIN:LoadData()
-	database = self:getData() or {}
-end
-function PLUGIN:SaveData()
-	self:setData(database)
-end
 
-function nut.util.ReadTable(name, _)
-	return database[name] or {}
+if (SERVER) then
+	local PLUGIN = PLUGIN
+	database = {}
+
+	function PLUGIN:LoadData()
+		database = self:getData() or {}
+	end
+	function PLUGIN:SaveData()
+		self:setData(database)
+	end
+
+	function nut.util.ReadTable(name, _)
+		return database[name] or {}
+	end
+	function nut.util.WriteTable(name, tbl, _, _)
+		database[name] = table.Copy(tbl)
+		PLUGIN:SaveData()
+	end
 end
-function nut.util.WriteTable(name, tbl, _, _)
-	database[name] = tbl
-end*/
 
 function nut.util.Include(fileName, state)
 	nut.util.include(fileName, state)
@@ -33,6 +39,18 @@ end
 
 function nut.util.AddLog(text, filter)
 	nut.log.add(text, filter)
+end
+
+function nut.item.GetAll()
+	return nut.item.list
+end
+
+function nut.faction.GetAll()
+	return nut.faction.indices
+end
+
+function nut.class.GetAll()
+	return nut.class.list
 end
 
 function nut.command.Register(data, cmd)
@@ -105,9 +123,9 @@ function playerMeta:SetNutVar(var, value)
 	self:setNetVar(var, value)
 end
 function playerMeta:UpdateInv(uniqueID, quantity, data, _)
+	quantity = quantity or 1
 	if quantity >= 0 then
-		quantity = quantity or 1
-		self:getChar():getInv():add(uniqueID, quantity, data)
+		self:getChar():getInv():add(uniqueID, quantity, data or {})
 	else
 		self:getChar():getInv():remove(uniqueID)
 	end
@@ -137,8 +155,23 @@ local ITEM = nut.meta.item or {}
 function ITEM:Hook(name, func)
 	self:hook(name, func)
 end
+function ITEM:GetDesc()
+	return self.desc
+end
 if CLIENT then
 	--Fonts
+	surface.CreateFont("nut_TargetFont", {
+		font = "Myriad Pro",
+		size = 16,
+		weight = 500,
+		antialias = true
+	})
+	surface.CreateFont("nut_ScoreTeamFont", {
+		font = "Myriad Pro",
+		size = 16,
+		weight = 500,
+		antialias = true
+	})
 	surface.CreateFont("nut_NotiFont", {
 		font = "Myriad Pro",
 		size = 16,
@@ -298,6 +331,9 @@ else
 	end
 	function playerMeta:TakeMoney(amount)
 		self:getChar():giveMoney(-amount)
+	end
+	function playerMeta:GiveMoney(amount)
+		self:getChar():giveMoney(amount)
 	end
 	function playerMeta:RealName(player)
 		return self:steamName()
