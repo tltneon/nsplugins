@@ -36,6 +36,9 @@ function RECIPES:Register( tbl )
 						return false
 					end
 				end
+				if !player:HasItem( k, v ) then
+					return false
+				end
 			end
 			return true
 		end
