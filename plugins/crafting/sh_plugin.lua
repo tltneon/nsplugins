@@ -31,6 +31,11 @@ function RECIPES:Register( tbl )
 	if !tbl.CanCraft then
 		function tbl:CanCraft( player )
 			for k, v in pairs( self.items ) do
+				if player:HasItem( k, v ) then
+					if player:getChar():getInv():getItemCount(k) < v then
+						return false
+					end
+				end
 				if !player:HasItem( k, v ) then
 					return false
 				end
