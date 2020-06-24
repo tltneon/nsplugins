@@ -40,7 +40,7 @@ end
 
 function QUEST:RemoveQuestItem( player, data )
 	for uid, num in pairs( data ) do
-		player:getChar():getInv():remove(player:getChar():getInv():hasItem( uid ):getID(), false, false)
+		player:getChar():getInv():remove(player:getChar():getInv():getFirstItemOfType( uid ):getID(), false, false)
 	end
 end
 
@@ -90,7 +90,7 @@ end
 
 function QUEST:RemoveQuestItem( player, data )
 	for uid, num in pairs( data ) do
-		player:getChar():getInv():remove(player:getChar():getInv():hasItem( uid ):getID(), false, false)
+		player:getChar():getInv():remove(player:getChar():getInv():getFirstItemOfType( uid ):getID(), false, false)
 	end
 end
 
